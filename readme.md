@@ -12,3 +12,10 @@ Extendo uses the SecurityTrails API and so it requires that you add your free AP
 Simply open the extension on your target page, and click the launch button. After loading phase, tabs will open automatically
 
 # Installation
+1. git clone https://github.com/PN-Tester/Extendo/
+2. Edit the background.js file and add your own securityTrails API key at the designated position
+3. In chromium based browser (chrome, edge, opera, etc) navigate to chrome://extensions
+4. Set the "Developer mode" switch to Enabled
+5. Select "Load unpacked" button which appears
+6. Select the Extendo folder and hit enter
+7. Restart the browser
