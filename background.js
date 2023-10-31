@@ -40,7 +40,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         async function checkUrl(url) {
           try {
             const response = await fetch(`https://${url}`);
-            if (![404, 401, 403, 400].includes(response.status)) {
+            if (![404, 401, 403, 400, 500, 502, 503, 501].includes(response.status)) {
               return url; // Return the URL if it's not 404, 401, or 403
             }
           } catch (error) {
