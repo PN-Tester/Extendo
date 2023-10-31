@@ -17,3 +17,7 @@ Simply open the extension on your target page, and click the launch button. Afte
 5. Select "Load unpacked" button which appears
 6. Select the Extendo folder and hit enter
 7. Restart the browser
+
+# Coming Soon
+Ability to granularly select the response codes you want Extendo to open via checkboxes. Currently things like 401, 403, and 404 are excluded.
+I understand that these can still be interesting to explore in many cases, and so this feature will allow users to choose what gets opened. 
