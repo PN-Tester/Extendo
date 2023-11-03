@@ -1,7 +1,7 @@
 # Extendo - Attack Surface Expansion Tool
 The purpose of this tool is to make casual determination of available web app attack surfaces convenient for casual browsing.
 No more commandline tools and subsequent trial and error. While this tool is only relevant for web application attack surface,
-it aims to offer a fast, convenient and hassle free approach for testers performing casual estimations and testings.
+it aims to offer a fast, convenient and hassle free approach for testers performing casual estimations and recon.
 
 # Usage
 In 1 click, you get all available subdomains hosting web apps opened in your browser as separate tabs. The tool will validate HTTP response codes
