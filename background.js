@@ -3,6 +3,8 @@ function getDomainFromUrl(url) {
   return currentUrl.hostname;
 }
 
+
+
 function CheckSubdomains(url) {
   return new Promise((resolve, reject) => {
     const domain = getDomainFromUrl(url);
@@ -38,16 +40,31 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       CheckSubdomains(currentUrl).then(subdomainArray => {
         // Create a function to check if a URL is valid to open
         async function checkUrl(url) {
-          try {
-            const response = await fetch(`https://${url}`);
-            if (![404, 401, 403, 400, 500, 502, 503, 501].includes(response.status)) {
-              return url; // Return the URL if it's not 404, 401, or 403
-            }
-          } catch (error) {
-            console.error(`Error checking URL ${url}: ${error}`);
-          }
-          return null; // Return null for invalid URLs
-        }
+  			try {
+    			// First, try to fetch the /robots.txt file for the subdomain
+    			const robotsTxtResponse = await fetch(`https://${url}/robots.txt`, { redirect: 'follow' });
+
+    			// If the /robots.txt fetch is successful (200 status), return this URL
+    			if (robotsTxtResponse.status === 200) {
+      				return `${url}/robots.txt`; // Successfully found /robots.txt
+    			}
+    			else {
+      				// If /robots.txt is not found or not accessible, check the main URL
+      				const response = await fetch(`https://${url}`, { redirect: 'follow' }); // 'follow' to automatically follow redirects
+
+      				// Check if the response is successful or a redirect that might eventually lead to a successful response
+      				if (![404, 401, 403, 400, 500, 502, 503, 501].includes(response.status)) {
+        				// Directly return the URL if the fetch was successful or ended in a redirect
+        				// This includes handling the initial redirects automatically
+        				return `${url}`;
+      				}
+    			}
+  			} catch (error) {
+    			console.error(`Error checking URL ${url}: ${error}`);
+  			}
+  		return null; // Return null if both /robots.txt and the main URL checks fail
+		}
+
 
         // Use Promise.all to check all URLs in parallel
         Promise.all(subdomainArray.map(subdomain => checkUrl(subdomain)))
