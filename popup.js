@@ -11,3 +11,13 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementsByClassName("extendo-title")[0].addEventListener("click", function() {
+    var newURL = "https://github.com/PN-Tester/Extendo";
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+      var activeTab = tabs[0];
+      chrome.tabs.update(activeTab.id, { url: newURL });
+    });
+  });
+});
