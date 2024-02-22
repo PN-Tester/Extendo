@@ -12,7 +12,7 @@ async function checkSubdomains(url) {
   try {
     const response = await fetch(`https://api.securitytrails.com/v1/domain/${cleanDomain}/subdomains?children_only=true&include_inactive=false`, {
       headers: {
-        'APIKEY': 'WA4D5SNXC2H4qTdKkXZV7uRgH9dlOVs1', // <----------------- Insert SecurityTrails API key here
+        'APIKEY': '', // <----------------- Insert SecurityTrails API key here
         'Accept': 'application/json'
       }
     });
