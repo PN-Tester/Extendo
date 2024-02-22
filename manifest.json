@@ -1,18 +1,21 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "Extendo",
   "version": "1.0",
-  "browser_action": {
+  "action": {
     "default_popup": "popup.html",
-    "default_icon":"logo.png"
+    "default_icon": "logo.png"
   },
   "permissions": [
-    "activeTab",
     "tabs",
+    "scripting",
     "https://api.securitytrails.com/*"
   ],
   "web_accessible_resources": [
-    "popup.css"
+    {
+      "resources": ["popup.css"],
+      "matches": ["<all_urls>"]
+    }
   ],
   "content_scripts": [
     {
@@ -21,7 +24,6 @@
     }
   ],
   "background": {
-    "scripts": ["background.js"],
-    "persistent": false
+    "service_worker": "service-worker.js"
   }
 }
