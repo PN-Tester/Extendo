@@ -37,8 +37,16 @@ async function checkSubdomains(url) {
 // Function to check if URL is valid
 async function checkUrl(url) {
   try {
-    const robotsTxtResponse = await fetch(`https://${url}/robots.txt`, { redirect: 'follow' });
-    if (robotsTxtResponse.ok) {
+    const timeoutPromise = new Promise((resolve, reject) => {
+      setTimeout(() => {
+        reject(new Error('Timeout'));
+      }, 6000); // Timeout set to 5 seconds
+    });
+
+    const robotsTxtPromise = fetch(`https://${url}/robots.txt`, { redirect: 'follow' });
+    const response = await Promise.race([robotsTxtPromise, timeoutPromise]);
+
+    if (response.ok) {
       return `${url}/robots.txt`;
     } else {
       const response = await fetch(`https://${url}`, { redirect: 'follow' });
