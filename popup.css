@@ -27,6 +27,9 @@ body {
   padding-bottom: 8px;
 }
 
+body::-webkit-scrollbar { display: none; }
+html { overflow: hidden; }
+
 /* ── Atmosphere ── */
 .grid-bg {
   position: fixed;
