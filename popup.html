@@ -5,22 +5,93 @@
     <link rel="stylesheet" href="popup.css">
   </head>
   <body>
-  	<div class="extendo-title">Attack Surface Expansion Tool</div>
-  	<br>
+    <div class="scanline"></div>
+    <div class="grid-bg"></div>
+
+    <header class="hdr">
+      <div class="hdr-bracket">[</div>
+      <div class="extendo-title">ATTACK SURFACE EXPANSION TOOL</div>
+      <div class="hdr-bracket">]</div>
+    </header>
+
+    <div class="status-bar">
+      <span class="status-dot blink"></span>
+      <span class="status-text" id="statusText">AWAITING TARGET</span>
+    </div>
+
     <div id="wrapper">
-    <a href="#" id="extendo" class="my-super-cool-btn">
-    <div class="dots-container" id="dotsContainer">
-      <div class="dot"></div>
-      <div class="dot"></div>
-      <div class="dot"></div>
-      <div class="dot"></div>
+      <a href="#" id="extendo" class="my-super-cool-btn">
+        <div class="dots-container" id="dotsContainer">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="spinContainer">
+          <span id="text" class="original-text">LAUNCH</span>
+          <div id="spinner" class="spinner hidden"></div>
+        </div>
+      </a>
     </div>
-    <div class=spinContainer>
-    <span id="text" class="original-text">LAUNCH</span>
-    <div id="spinner" class="spinner hidden"></div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-icon"></span>
+        <span class="panel-label">VALID RESPONSE CODES</span>
+        <span class="panel-icon"></span>
+      </div>
+      <div class="codes-grid">
+        <label class="code-toggle" data-code="200">
+          <input type="checkbox" value="200" checked>
+          <span class="code-badge">200</span>
+          <span class="code-name">OK</span>
+        </label>
+        <label class="code-toggle" data-code="301">
+          <input type="checkbox" value="301" checked>
+          <span class="code-badge">301</span>
+          <span class="code-name">MOVED</span>
+        </label>
+        <label class="code-toggle" data-code="302">
+          <input type="checkbox" value="302" checked>
+          <span class="code-badge">302</span>
+          <span class="code-name">FOUND</span>
+        </label>
+        <label class="code-toggle" data-code="401">
+          <input type="checkbox" value="401">
+          <span class="code-badge warn">401</span>
+          <span class="code-name">UNAUTH</span>
+        </label>
+        <label class="code-toggle" data-code="403">
+          <input type="checkbox" value="403">
+          <span class="code-badge warn">403</span>
+          <span class="code-name">FORBID</span>
+        </label>
+        <label class="code-toggle" data-code="404">
+          <input type="checkbox" value="404">
+          <span class="code-badge err">404</span>
+          <span class="code-name">NOT FOUND</span>
+        </label>
+        <label class="code-toggle" data-code="500">
+          <input type="checkbox" value="500">
+          <span class="code-badge err">500</span>
+          <span class="code-name">SERVER ERR</span>
+        </label>
+        <label class="code-toggle" data-code="503">
+          <input type="checkbox" value="503">
+          <span class="code-badge err">503</span>
+          <span class="code-name">UNAVAIL</span>
+        </label>
+      </div>
     </div>
-    </a>
+
+    <div class="footer-line">
+      <span class="footer-seg">v2.0</span>
+      <span class="footer-sep">//</span>
+      <span class="footer-seg" id="footerGh">EXTENDO</span>
+      <span class="footer-sep">//</span>
+      <span class="footer-seg">PN-TESTER</span>
     </div>
+
     <script src="popup.js"></script>
   </body>
 </html>
