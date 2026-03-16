@@ -1,82 +1,105 @@
-// Function to extract domain from URL
+// EXTENDO
+// By: PN-Tester
+
 function getDomainFromUrl(url) {
-  const currentUrl = new URL(url);
-  return currentUrl.hostname;
+  const parsed = new URL(url);
+  return parsed.hostname;
 }
 
-// Function to fetch subdomains from SecurityTrails API
+// Fetch active subdomains via SecurityTrails API
 async function checkSubdomains(url) {
   const domain = getDomainFromUrl(url);
-  const cleanDomain = domain.replace(/^www\./, ''); // Remove 'www.' if present
+  const cleanDomain = domain.replace(/^www\./, '');
 
   try {
-    const response = await fetch(`https://api.securitytrails.com/v1/domain/${cleanDomain}/subdomains?children_only=true&include_inactive=false`, {
-      headers: {
-        'APIKEY': '', // <----------------- Insert SecurityTrails API key here
-        'Accept': 'application/json'
+    const response = await fetch(
+      `https://api.securitytrails.com/v1/domain/${cleanDomain}/subdomains?children_only=true&include_inactive=false`,
+      {
+        headers: {
+          'APIKEY': '', // <----------------------------- PUT YOUR SECURITYTRAILS API KEY HERE
+          'Accept': 'application/json'
+        }
       }
-    });
-    
+    );
+
     if (response.ok) {
-      const responseData = await response.json();
-      if (responseData.subdomains && Array.isArray(responseData.subdomains)) {
-        const subdomainArray = responseData.subdomains.map(subdomain => `${subdomain}.${cleanDomain}`);
-        return subdomainArray;
-      } else {
-        return [];
+      const data = await response.json();
+      if (data.subdomains && Array.isArray(data.subdomains)) {
+        return data.subdomains.map(sub => `${sub}.${cleanDomain}`);
       }
-    } else {
-      return [];
     }
-  } catch (error) {
-    console.error('Error fetching subdomains:', error);
-    return [];
+  } catch (err) {
+    console.error('Error fetching subdomains:', err);
   }
+  return [];
 }
 
-// Function to check if URL is valid
-async function checkUrl(url) {
+async function checkUrl(subdomain, validCodes) {
+  const TIMEOUT_MS = 6000;
+
+  const fetchWithTimeout = (url) => {
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Timeout')), TIMEOUT_MS)
+    );
+    return Promise.race([fetch(url, { redirect: 'follow' }), timeout]);
+  };
+
+  // Probe /robots.txt first
   try {
-    const timeoutPromise = new Promise((resolve, reject) => {
-      setTimeout(() => {
-        reject(new Error('Timeout'));
-      }, 6000); // Timeout set to 5 seconds
-    });
-
-    const robotsTxtPromise = fetch(`https://${url}/robots.txt`, { redirect: 'follow' });
-    const response = await Promise.race([robotsTxtPromise, timeoutPromise]);
-
-    if (response.ok) {
-      return `${url}/robots.txt`;
-    } else {
-      const response = await fetch(`https://${url}`, { redirect: 'follow' });
-      if (response.ok) {
-        return `${url}`;
-      }
+    const robotsResp = await fetchWithTimeout(`https://${subdomain}/robots.txt`);
+    if (validCodes.includes(robotsResp.status)) {
+      return { url: `${subdomain}/robots.txt`, status: robotsResp.status };
     }
-  } catch (error) {
-    console.error(`Error checking URL ${url}: ${error}`);
+  } catch (_) {
+    // timeout or network error — skip to root probe
   }
+
+  // Probe root
+  try {
+    const rootResp = await fetchWithTimeout(`https://${subdomain}`);
+    if (validCodes.includes(rootResp.status)) {
+      return { url: `${subdomain}`, status: rootResp.status };
+    }
+  } catch (_) {
+    // unreachable
+  }
+
   return null;
 }
 
-// Listen for messages from the extension
-chrome.runtime.onMessage.addListener(async function(request, sender, sendResponse) {
-  if (request.action === 'extendo') {
-    // Open a new tab when the button is clicked
-    const tabs = await chrome.tabs.query({ active: true });
-    const currentUrl = tabs[0].url;
-    
-    try {
-      const subdomainArray = await checkSubdomains(currentUrl);
-      const validSubdomains = await Promise.all(subdomainArray.map(subdomain => checkUrl(subdomain)));
+// LISTENER
 
-      const non404Subdomains = validSubdomains.filter(subdomain => subdomain !== null);
-      non404Subdomains.forEach(subdomain => {
-        chrome.tabs.create({ url: `https://${subdomain}` });
-      });
-    } catch (error) {
-      console.error('Error processing subdomains:', error);
-    }
+chrome.runtime.onMessage.addListener(async function (request, sender) {
+  if (request.action !== 'extendo') return;
+
+  // Default valid codes if none supplied 
+  const validCodes = Array.isArray(request.validCodes) && request.validCodes.length > 0
+    ? request.validCodes
+    : [200, 301, 302];
+
+  try {
+    const tabs        = await chrome.tabs.query({ active: true });
+    const currentUrl  = tabs[0].url;
+
+    const subdomains  = await checkSubdomains(currentUrl);
+
+    // Check all subdomains concurrently
+    const results     = await Promise.all(
+      subdomains.map(sub => checkUrl(sub, validCodes))
+    );
+
+    const hits = results.filter(r => r !== null);
+
+    //Open a tab for each valid subdomain
+    hits.forEach(hit => {
+      chrome.tabs.create({ url: `https://${hit.url}` });
+    });
+
+    // Notify the popup with result count
+    chrome.runtime.sendMessage({ action: 'extendoResult', count: hits.length });
+
+  } catch (err) {
+    console.error('Error processing subdomains:', err);
+    chrome.runtime.sendMessage({ action: 'extendoResult', count: 0 });
   }
 });
