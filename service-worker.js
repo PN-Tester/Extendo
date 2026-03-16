@@ -1,5 +1,7 @@
 // EXTENDO
-// By: PN-Tester
+// By : PN-Tester
+
+// Helpers
 
 function getDomainFromUrl(url) {
   const parsed = new URL(url);
@@ -16,7 +18,7 @@ async function checkSubdomains(url) {
       `https://api.securitytrails.com/v1/domain/${cleanDomain}/subdomains?children_only=true&include_inactive=false`,
       {
         headers: {
-          'APIKEY': '', // <----------------------------- PUT YOUR SECURITYTRAILS API KEY HERE
+          'APIKEY': '', // <-------------- YOUR API KEY GOES HERE
           'Accept': 'application/json'
         }
       }
@@ -25,7 +27,8 @@ async function checkSubdomains(url) {
     if (response.ok) {
       const data = await response.json();
       if (data.subdomains && Array.isArray(data.subdomains)) {
-        return data.subdomains.map(sub => `${sub}.${cleanDomain}`);
+        const unique = [...new Set(data.subdomains.map(sub => sub.toLowerCase()))];
+        return unique.map(sub => `${sub}.${cleanDomain}`);
       }
     }
   } catch (err) {
@@ -50,9 +53,7 @@ async function checkUrl(subdomain, validCodes) {
     if (validCodes.includes(robotsResp.status)) {
       return { url: `${subdomain}/robots.txt`, status: robotsResp.status };
     }
-  } catch (_) {
-    // timeout or network error — skip to root probe
-  }
+  } catch (_) {}
 
   // Probe root
   try {
@@ -60,46 +61,56 @@ async function checkUrl(subdomain, validCodes) {
     if (validCodes.includes(rootResp.status)) {
       return { url: `${subdomain}`, status: rootResp.status };
     }
-  } catch (_) {
-    // unreachable
-  }
+  } catch (_) {}
 
   return null;
 }
 
-// LISTENER
+// Listener
 
 chrome.runtime.onMessage.addListener(async function (request, sender) {
-  if (request.action !== 'extendo') return;
 
-  // Default valid codes if none supplied 
-  const validCodes = Array.isArray(request.validCodes) && request.validCodes.length > 0
-    ? request.validCodes
-    : [200, 301, 302];
+  // LAUNCH - enumerate subdomains and return hits to popup
+  if (request.action === 'extendo') {
+    const validCodes = Array.isArray(request.validCodes) && request.validCodes.length > 0
+      ? request.validCodes
+      : [200, 301, 302];
 
-  try {
-    const tabs        = await chrome.tabs.query({ active: true });
-    const currentUrl  = tabs[0].url;
+    try {
+      const tabs       = await chrome.tabs.query({ active: true });
+      const currentUrl = tabs[0].url;
+      const subdomains = await checkSubdomains(currentUrl);
 
-    const subdomains  = await checkSubdomains(currentUrl);
+      const results = await Promise.all(
+        subdomains.map(sub => checkUrl(sub, validCodes))
+      );
 
-    // Check all subdomains concurrently
-    const results     = await Promise.all(
-      subdomains.map(sub => checkUrl(sub, validCodes))
-    );
+      const hits = results.filter(r => r !== null);
 
-    const hits = results.filter(r => r !== null);
+      // Deduplicate by host
+      const seenHosts = new Set();
+      const uniqueHits = hits.filter(hit => {
+        const host = hit.url.replace(/\/robots\.txt$/, '').toLowerCase();
+        if (seenHosts.has(host)) return false;
+        seenHosts.add(host);
+        return true;
+      });
 
-    //Open a tab for each valid subdomain
-    hits.forEach(hit => {
-      chrome.tabs.create({ url: `https://${hit.url}` });
+      // Send hits back to popup — do NOT open tabs here anymore
+      chrome.runtime.sendMessage({ action: 'extendoResult', hits: uniqueHits });
+
+    } catch (err) {
+      console.error('Error processing subdomains:', err);
+      chrome.runtime.sendMessage({ action: 'extendoResult', hits: [] });
+    }
+  }
+
+  // OPEN TABS - Use only user selected ones here
+  if (request.action === 'openTabs') {
+    const urls = Array.isArray(request.urls) ? request.urls : [];
+    urls.forEach(url => {
+      const fullUrl = url.startsWith('http') ? url : `https://${url}`;
+      chrome.tabs.create({ url: fullUrl });
     });
-
-    // Notify the popup with result count
-    chrome.runtime.sendMessage({ action: 'extendoResult', count: hits.length });
-
-  } catch (err) {
-    console.error('Error processing subdomains:', err);
-    chrome.runtime.sendMessage({ action: 'extendoResult', count: 0 });
   }
 });
