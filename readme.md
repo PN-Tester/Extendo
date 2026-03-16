@@ -8,7 +8,6 @@ NEW IN VERSION 3 :
 - Granular control of what subdomains are opened
 - Improved UI!
 
-![](https://github.com/PN-Tester/Extendo/blob/main/Extendo_demo.gif)
 
 # Usage
 In 1 click, you get all the available subdomains associated with your target. The tool will validate HTTP response codes
