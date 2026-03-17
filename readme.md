@@ -7,7 +7,6 @@ NEW IN VERSION 3 :
 - User defines valid response codes
 - Granular control of what subdomains are opened
 - Improved UI!
-- 
 ![](https://github.com/PN-Tester/Extendo/blob/main/Extendo_demo.gif)
 
 
