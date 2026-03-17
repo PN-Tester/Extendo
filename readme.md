@@ -14,7 +14,7 @@ NEW IN VERSION 3 :
 # Usage
 In 1 click, you get all the available subdomains associated with your target. The tool will validate HTTP response codes
 for each enumerated subdomain, keeping only the type that the user selected (default 200, 301, 302). After enumeration, the extension will display a list of results and allow the user to open all desired subdomains in new tabs.
-Extendo uses the SecurityTrails API and so it requires that you add your free API key to the background.js file at the designated position.
+Extendo uses the SecurityTrails API and so it requires that you add your free API key to the service-worker.js file at the designated position.
 Simply open the extension on your target page, and click the launch button. After loading phase, tabs will open automatically.
 
 # Installation
