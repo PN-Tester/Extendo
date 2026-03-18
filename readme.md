@@ -7,14 +7,16 @@ NEW IN VERSION 3 :
 - User defines valid response codes
 - Granular control of what subdomains are opened
 - Improved UI!
-  
+
+# Demo
 ![](https://github.com/PN-Tester/Extendo/blob/main/Extendo_demo.gif)
 
 
 # Usage
-In 1 click, you get all the available subdomains associated with your target. The tool will validate HTTP response codes
-for each enumerated subdomain, keeping only the type that the user selected (default 200, 301, 302). After enumeration, the extension will display a list of results and allow the user to open all desired subdomains in new tabs.
-Extendo uses the SecurityTrails API and so it requires that you add your free API key to the service-worker.js file at the designated position.
+With 1 click, the tool will fetch historical DNS records and attempt to return all active subdomains of your target. 
+The tool will validate connectivity to each enumerated subdomain, and return a filtered list of live hosts based on the user selected HTTP response codes.
+After enumeration, the extension will display the list of results and allow the user to select which subdomains to open. Selected subdomains will open silmultaneously in new tabs.
+Extendo uses the SecurityTrails API and requires that you add your free API key to the service-worker.js file at the designated position.
 Simply open the extension on your target page, and click the launch button. After loading phase, tabs will open automatically.
 
 # Installation
